@@ -2,11 +2,11 @@ package com.allo.hrworker.resources;
 
 import com.allo.hrworker.entities.Worker;
 import com.allo.hrworker.repositories.WorkRepository;
-import lombok.AllArgsConstructor;
-import org.hibernate.jdbc.Work;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,28 +16,46 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@RefreshScope
 @RestController
 @RequestMapping(value = "/workers")
-@AllArgsConstructor
 public class WorkerResource {
 
-    private static Logger log = LoggerFactory.getLogger(WorkerResource.class);
+    private static Logger logger = LoggerFactory.getLogger(WorkerResource.class);
 
-    private final Environment env;
+    @Value("${test.config}")
+    private String testConfig;
 
-    private final WorkRepository repository;
+    @Autowired
+    private Environment env;
+
+    @Autowired
+    private WorkRepository repository;
+
+    @GetMapping(value = "/configs")
+    public ResponseEntity<Void> getConfigs() {
+        logger.info("CONFIG = " + testConfig);
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping
-    public ResponseEntity<List<Worker>> findAll(){
+    public ResponseEntity<List<Worker>> findAll() {
         List<Worker> list = repository.findAll();
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Worker> findById(@PathVariable Long id){
-//        log.info("Port = " + env.getProperty("local.server.port"));
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<Worker> findById(@PathVariable Long id) {
 
-        Worker worker = repository.findById(id).orElseThrow();
-        return ResponseEntity.ok(worker);
+        try {
+            Thread.sleep(3000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        logger.info("PORT = " + env.getProperty("local.server.port"));
+
+        Worker obj = repository.findById(id).get();
+        return ResponseEntity.ok(obj);
     }
 }
