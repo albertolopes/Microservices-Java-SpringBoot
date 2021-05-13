@@ -33,3 +33,4 @@ build/
 .vscode/
 
 hr-config-server/src/main/resources/application.properties
+hr-config-server/src/main/resources/application.properties
